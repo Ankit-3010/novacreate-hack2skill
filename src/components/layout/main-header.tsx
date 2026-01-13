@@ -108,7 +108,9 @@ export function MainHeader() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+                <Link href="/profile">My Account</Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
                 <Link href={settingsItem.href}>{settingsItem.label}</Link>
