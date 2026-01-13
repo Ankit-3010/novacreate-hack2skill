@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { FileText, ImageIcon, Lightbulb, Mic, Wand2 } from "lucide-react";
+import { FileText, ImageIcon, Mic, Wand2 } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useToast } from "@/hooks/use-toast";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,10 +23,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { generateVideoThumbnail } from "@/ai/flows/generate-video-thumbnail";
-import { generateVideoScriptsAndHooks } from "@/ai/flows/generate-video-scripts-and-hooks";
-import { generateVideoCaptionsAndSubtitles } from "@/ai/flows/generate-video-captions-and-subtitles";
+import { generateVideoThumbnail, GenerateVideoThumbnailOutput } from "@/ai/flows/generate-video-thumbnail";
+import { generateVideoScriptsAndHooks, GenerateVideoScriptsAndHooksOutput } from "@/ai/flows/generate-video-scripts-and-hooks";
+import { generateVideoCaptionsAndSubtitles, GenerateVideoCaptionsAndSubtitlesOutput } from "@/ai/flows/generate-video-captions-and-subtitles";
+import { Upload } from "lucide-react";
 
 const thumbnailSchema = z.object({
   videoTitle: z.string().min(5, "Title must be at least 5 characters."),
@@ -40,15 +41,22 @@ const scriptSchema = z.object({
 });
 
 const captionSchema = z.object({
-  videoDataUri: z.string().optional(), // In a real app, this would handle file uploads
+  videoFile: z.any().refine(file => file instanceof File, { message: "Video file is required" }),
   language: z.string().min(2, "Language is required."),
 });
+
+type ResultState = {
+  thumbnail?: GenerateVideoThumbnailOutput;
+  script?: GenerateVideoScriptsAndHooksOutput;
+  captions?: GenerateVideoCaptionsAndSubtitlesOutput;
+};
 
 export default function CreatePage() {
   const [activeTab, setActiveTab] = useState("thumbnail");
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<any>({});
-  
+  const [results, setResults] = useState<ResultState>({});
+  const { toast } = useToast();
+
   const thumbnailForm = useForm<z.infer<typeof thumbnailSchema>>({
     resolver: zodResolver(thumbnailSchema),
     defaultValues: { videoTitle: "", videoDescription: "", userPrompt: "" },
@@ -64,36 +72,77 @@ export default function CreatePage() {
     defaultValues: { language: "English" },
   });
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    if (e.target.files && e.target.files.length > 0) {
+      field.onChange(e.target.files[0]);
+    }
+  };
 
   async function handleThumbnailSubmit(values: z.infer<typeof thumbnailSchema>) {
     setLoading(true);
     setResults({});
-    // In a real app, you would call the AI flow. Here we simulate it.
-    // const result = await generateVideoThumbnail(values);
-    setTimeout(() => {
-      setResults({
-        thumbnail: PlaceHolderImages.find(p => p.id === 'thumbnail-preview')
+    try {
+      const result = await generateVideoThumbnail(values);
+      setResults({ thumbnail: result });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error generating thumbnail",
+        description: error.message || "An unexpected error occurred.",
       });
-      setLoading(false);
-    }, 2000);
+    }
+    setLoading(false);
   }
   
   async function handleScriptSubmit(values: z.infer<typeof scriptSchema>) {
     setLoading(true);
     setResults({});
-    // const result = await generateVideoScriptsAndHooks(values);
-     setTimeout(() => {
-      setResults({
-        script: "This is a generated script about " + values.topic + ". It starts with an interesting hook to grab attention. The middle part explains the core concepts for " + values.targetAudience + ". Finally, it ends with a strong call to action.",
-        hooks: {
-          curious: "Did you know this one secret about " + values.topic + "?",
-          controversial: "Everything you've been told about " + values.topic + " is wrong.",
-          educational: "In the next " + values.videoLength + ", you'll master " + values.topic + ".",
-          fomo: "Don't be the last to know about this " + values.topic + " trend."
-        }
+    try {
+      const result = await generateVideoScriptsAndHooks(values);
+      setResults({ script: result });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error generating script",
+        description: error.message || "An unexpected error occurred.",
+      });
+    }
+    setLoading(false);
+  }
+
+  async function handleCaptionSubmit(values: z.infer<typeof captionSchema>) {
+    setLoading(true);
+    setResults({});
+
+    const file = values.videoFile as File;
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async () => {
+      const videoDataUri = reader.result as string;
+      try {
+        const result = await generateVideoCaptionsAndSubtitles({
+          videoDataUri: videoDataUri,
+          language: values.language
+        });
+        setResults({ captions: result });
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Error generating captions",
+          description: error.message || "An unexpected error occurred.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    reader.onerror = (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error reading file",
+        description: "Could not read the selected video file.",
       });
       setLoading(false);
-    }, 2000);
+    }
   }
 
   return (
@@ -103,11 +152,10 @@ export default function CreatePage() {
         subtitle="Generate stunning assets for your content in seconds."
       />
       <Tabs defaultValue="thumbnail" onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-transparent border-b rounded-none p-0 mb-6">
+        <TabsList className="grid w-full grid-cols-3 bg-transparent border-b rounded-none p-0 mb-6">
             <TabsTrigger value="thumbnail" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none rounded-t-md rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary"><ImageIcon className="mr-2 h-4 w-4"/>Thumbnail</TabsTrigger>
             <TabsTrigger value="script" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none rounded-t-md rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary"><FileText className="mr-2 h-4 w-4"/>Script & Hooks</TabsTrigger>
             <TabsTrigger value="caption" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none rounded-t-md rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary"><Mic className="mr-2 h-4 w-4"/>Captions</TabsTrigger>
-            <TabsTrigger value="hooks" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none rounded-t-md rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary"><Lightbulb className="mr-2 h-4 w-4"/>Hooks</TabsTrigger>
         </TabsList>
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-2">
@@ -117,6 +165,9 @@ export default function CreatePage() {
                             <form onSubmit={thumbnailForm.handleSubmit(handleThumbnailSubmit)} className="space-y-6">
                                 <FormField control={thumbnailForm.control} name="videoTitle" render={({ field }) => (
                                     <FormItem><FormLabel>Video Title</FormLabel><FormControl><Input placeholder="e.g., My Trip to Japan" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                 <FormField control={thumbnailForm.control} name="videoDescription" render={({ field }) => (
+                                    <FormItem><FormLabel>Video Description</FormLabel><FormControl><Textarea placeholder="e.g., A cinematic travel film..." {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
                                 <FormField control={thumbnailForm.control} name="userPrompt" render={({ field }) => (
                                     <FormItem><FormLabel>Thumbnail Prompt</FormLabel><FormControl><Textarea placeholder="Describe the vibe, e.g., 'Vibrant, anime-style, Mount Fuji in background'" {...field} /></FormControl><FormMessage /></FormItem>
@@ -142,10 +193,37 @@ export default function CreatePage() {
                         </Form>
                     </TabsContent>
                     <TabsContent value="caption">
-                        <p className="text-center text-muted-foreground py-12">Caption generator coming soon.</p>
-                    </TabsContent>
-                    <TabsContent value="hooks">
-                         <p className="text-center text-muted-foreground py-12">Hook generator coming soon.</p>
+                         <Form {...captionForm}>
+                            <form onSubmit={captionForm.handleSubmit(handleCaptionSubmit)} className="space-y-6">
+                                <FormField
+                                  control={captionForm.control}
+                                  name="videoFile"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Video File</FormLabel>
+                                      <FormControl>
+                                        <div className="flex items-center justify-center w-full">
+                                          <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted/80 border-input">
+                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                              <Upload className="w-8 h-8 mb-4 text-muted-foreground"/>
+                                              <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                              <p className="text-xs text-muted-foreground">MP4, MOV, etc.</p>
+                                            </div>
+                                            <input id="dropzone-file" type="file" className="hidden" accept="video/*" onChange={(e) => handleFileChange(e, field)} />
+                                          </label>
+                                        </div> 
+                                      </FormControl>
+                                      {field.value && <p className="text-sm text-muted-foreground mt-2">Selected: {(field.value as File).name}</p>}
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField control={captionForm.control} name="language" render={({ field }) => (
+                                    <FormItem><FormLabel>Language</FormLabel><FormControl><Input placeholder="e.g., English" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <Button type="submit" disabled={loading} className="w-full"><Wand2 className="mr-2 h-4 w-4" />Generate</Button>
+                            </form>
+                        </Form>
                     </TabsContent>
                 </GlassCard>
             </div>
@@ -162,21 +240,29 @@ export default function CreatePage() {
                             {activeTab === 'thumbnail' && results.thumbnail && (
                                 <>
                                     <h3 className="text-lg font-bold text-center mb-4">Generated Thumbnail</h3>
-                                    <Image src={results.thumbnail.imageUrl} alt="Generated thumbnail" width={1280} height={720} className="rounded-lg aspect-video object-cover" data-ai-hint={results.thumbnail.imageHint} />
+                                    <Image src={results.thumbnail.thumbnailDataUri} alt="Generated thumbnail" width={1280} height={720} className="rounded-lg aspect-video object-cover" />
                                 </>
                             )}
                             {activeTab === 'script' && results.script && (
                                 <div className="space-y-4 text-left max-h-[450px] overflow-y-auto pr-2">
                                     <h3 className="text-lg font-bold">Generated Script</h3>
-                                    <p className="text-muted-foreground whitespace-pre-wrap">{results.script}</p>
+                                    <p className="text-muted-foreground whitespace-pre-wrap">{results.script.script}</p>
                                     <h3 className="text-lg font-bold pt-4">Generated Hooks</h3>
                                     <ul className="space-y-2">
-                                      {Object.entries(results.hooks).map(([key, value]) => (
+                                      {Object.entries(results.script.hooks).map(([key, value]) => (
                                         <li key={key} className="p-3 bg-muted rounded-md">
                                           <strong className="capitalize text-primary">{key}:</strong> <span className="text-muted-foreground">{value as string}</span>
                                         </li>
                                       ))}
                                     </ul>
+                                </div>
+                            )}
+                            {activeTab === 'caption' && results.captions && (
+                                <div className="space-y-4 text-left max-h-[450px] overflow-y-auto pr-2">
+                                    <h3 className="text-lg font-bold">Generated Captions</h3>
+                                    <p className="text-muted-foreground whitespace-pre-wrap">{results.captions.captions}</p>
+                                    <h3 className="text-lg font-bold pt-4">Generated Subtitles</h3>
+                                    <p className="text-muted-foreground whitespace-pre-wrap">{results.captions.subtitles}</p>
                                 </div>
                             )}
                             {!loading && Object.keys(results).length === 0 && (
