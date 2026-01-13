@@ -1,19 +1,27 @@
+"use client";
+
 import { PageHeader } from "@/components/shared/page-header";
-import { GlassCard } from "@/components/shared/glass-card";
-import { Construction } from "lucide-react";
+import { ScheduleCalendar } from "@/components/schedule/schedule-calendar";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
+import { SchedulePostDialog } from "@/components/schedule/schedule-post-dialog";
 
 export default function SchedulePage() {
   return (
     <div>
-      <PageHeader
-        title="Content Scheduler"
-        subtitle="Plan and schedule your content with AI-powered recommendations."
-      />
-       <GlassCard className="mt-8 flex flex-col items-center justify-center min-h-[400px]">
-         <Construction className="w-16 h-16 text-primary mb-4" />
-        <h2 className="text-2xl font-bold">Coming Soon</h2>
-        <p className="text-muted-foreground mt-2">This feature is currently under development.</p>
-      </GlassCard>
+      <div className="flex items-center justify-between mb-6">
+        <PageHeader
+          title="Content Scheduler"
+          subtitle="Plan and publish your content with AI-powered recommendations."
+        />
+        <SchedulePostDialog>
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Schedule Post
+          </Button>
+        </SchedulePostDialog>
+      </div>
+      <ScheduleCalendar />
     </div>
   );
 }
