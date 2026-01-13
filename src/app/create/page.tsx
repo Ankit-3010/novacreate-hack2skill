@@ -4,7 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { FileText, ImageIcon, Lightbulb, Mic, Wand2 } from "lucide-react";
 import { z } from "zod";
-import { useForm, zodResolver } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
