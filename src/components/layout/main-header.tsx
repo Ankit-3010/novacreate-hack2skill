@@ -7,7 +7,9 @@ import {
   Calendar,
   Hash,
   LayoutDashboard,
+  Menu,
   Scissors,
+  Settings,
   SlidersHorizontal,
   Sparkles,
   Wand2,
@@ -46,6 +48,8 @@ const toolsItems = [
   { href: "/schedule", label: "Scheduler", icon: Calendar },
 ];
 
+const settingsItem = { href: "/settings", label: "Settings", icon: Settings };
+
 
 export function MainHeader() {
   const userAvatar = PlaceHolderImages.find((p) => p.id === "user-avatar");
@@ -54,6 +58,28 @@ export function MainHeader() {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-lg sm:px-6">
       <SidebarTrigger className="sm:hidden" />
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="hidden md:inline-flex">
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle Menu</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuLabel>Navigation</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {[...navItems, ...toolsItems].map((item) => (
+            <DropdownMenuItem key={item.href} asChild>
+              <Link href={item.href}>{item.label}</Link>
+            </DropdownMenuItem>
+          ))}
+           <DropdownMenuSeparator />
+           <DropdownMenuItem asChild>
+              <Link href={settingsItem.href}>{settingsItem.label}</Link>
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <div className="flex items-center gap-6">
         <Select defaultValue="project-1">
@@ -68,7 +94,7 @@ export function MainHeader() {
         </Select>
         
         <nav className="hidden items-center gap-4 text-sm font-medium md:flex">
-            {[...navItems, ...toolsItems].map((item) => (
+            {navItems.map((item) => (
                  <Link
                     key={item.href}
                     href={item.href}
