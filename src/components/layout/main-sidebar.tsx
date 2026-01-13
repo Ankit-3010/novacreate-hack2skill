@@ -3,14 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Calendar,
-  Hash,
-  LayoutDashboard,
   Settings,
-  Scissors,
-  SlidersHorizontal,
-  Sparkles,
-  Wand2,
 } from "lucide-react";
 
 import {
@@ -22,20 +15,6 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Logo } from "@/components/icons/logo";
-import { Separator } from "@/components/ui/separator";
-
-const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/create", label: "AI Create", icon: Sparkles },
-  { href: "/remix", label: "Remix Studio", icon: Wand2 },
-];
-
-const toolsItems = [
-  { href: "/tools/repurpose", label: "Repurpose", icon: Scissors },
-  { href: "/tools/hashtags", label: "Hashtags", icon: Hash },
-  { href: "/tools/optimize", label: "Optimize", icon: SlidersHorizontal },
-  { href: "/schedule", label: "Scheduler", icon: Calendar },
-];
 
 export function MainSidebar() {
   const pathname = usePathname();
@@ -50,39 +29,6 @@ export function MainSidebar() {
           </span>
         </div>
         <SidebarContent className="p-2">
-          <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href}
-                  tooltip={item.label}
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-          <Separator className="my-4" />
-          <SidebarMenu>
-            {toolsItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname.startsWith(item.href)}
-                  tooltip={item.label}
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
         </SidebarContent>
       </SidebarHeader>
       
