@@ -20,7 +20,7 @@ export default function DashboardPage() {
       />
 
       <section>
-        <h2 className="text-2xl font-bold tracking-tight mb-4 text-primary-foreground/90">
+        <h2 className="text-2xl font-bold tracking-tight mb-4 text-foreground">
           Quick Actions
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -41,7 +41,7 @@ export default function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold tracking-tight mb-4 text-primary-foreground/90">
+        <h2 className="text-2xl font-bold tracking-tight mb-4 text-foreground">
           Analytics Preview
         </h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
