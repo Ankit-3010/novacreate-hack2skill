@@ -1,37 +1,21 @@
 import {
-  BarChart,
-  Calendar,
-  Clapperboard,
-  HeartPulse,
-  Lightbulb,
-  Sparkles,
-  Target,
-  Timer,
   TrendingUp,
-  Video,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { GlassCard } from "@/components/shared/glass-card";
-import { Button } from "@/components/ui/button";
 import {
+  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartConfig,
 } from "@/components/ui/chart";
-import {
-  Bar,
-  CartesianGrid,
-  XAxis,
-  BarChart as RechartsBarChart,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { BarChart, CartesianGrid, XAxis, Bar, Tooltip, ResponsiveContainer } from "recharts";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { quickActions, analyticsData, bestTimesData } from "@/lib/data";
+import { quickActions, bestTimesData, analyticsData } from "@/lib/data";
+
 
 const chartConfig = {
   views: {
@@ -114,9 +98,9 @@ export default function DashboardPage() {
             <p className="text-sm text-muted-foreground mt-1">
               AI recommendations for maximum reach.
             </p>
-            <div className="mt-4 h-48">
+            <ChartContainer config={chartConfig} className="mt-4 h-48">
               <ResponsiveContainer width="100%" height="100%">
-                <RechartsBarChart data={bestTimesData}>
+                <BarChart data={bestTimesData}>
                   <CartesianGrid
                     vertical={false}
                     stroke="hsl(var(--muted))"
@@ -139,9 +123,9 @@ export default function DashboardPage() {
                     fill="var(--color-views)"
                     radius={4}
                   />
-                </RechartsBarChart>
+                </BarChart>
               </ResponsiveContainer>
-            </div>
+            </ChartContainer>
           </GlassCard>
         </div>
       </section>
