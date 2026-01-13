@@ -3,16 +3,7 @@
 import Link from "next/link";
 import {
   Bell,
-  Calendar,
   ChevronDown,
-  Hash,
-  LayoutDashboard,
-  Menu,
-  Scissors,
-  Settings,
-  SlidersHorizontal,
-  Sparkles,
-  Wand2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,15 +26,15 @@ import {
 import { Logo } from "../icons/logo";
 
 const navItems = [
-  { href: "/create", label: "AI Create", icon: Sparkles },
-  { href: "/remix", label: "Remix Studio", icon: Wand2 },
-  { href: "/tools/repurpose", label: "Repurpose", icon: Scissors },
-  { href: "/tools/hashtags", label: "Hashtags", icon: Hash },
-  { href: "/tools/optimize", label: "Optimize", icon: SlidersHorizontal },
-  { href: "/schedule", label: "Scheduler", icon: Calendar },
+  { href: "/create", label: "AI Create" },
+  { href: "/remix", label: "Remix Studio" },
+  { href: "/tools/repurpose", label: "Repurpose" },
+  { href: "/tools/hashtags", label: "Hashtags" },
+  { href: "/tools/optimize", label: "Optimize" },
+  { href: "/schedule", label: "Scheduler" },
 ];
 
-const settingsItem = { href: "/settings", label: "Settings", icon: Settings };
+const settingsItem = { href: "/profile", label: "Settings" };
 
 
 export function MainHeader() {
@@ -77,10 +68,6 @@ export function MainHeader() {
                 <Link href={item.href}>{item.label}</Link>
               </DropdownMenuItem>
             ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <Link href={settingsItem.href}>{settingsItem.label}</Link>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </nav>
@@ -123,7 +110,9 @@ export function MainHeader() {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+                <Link href={settingsItem.href}>{settingsItem.label}</Link>
+            </DropdownMenuItem>
             <DropdownMenuItem>Support</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Logout</DropdownMenuItem>
