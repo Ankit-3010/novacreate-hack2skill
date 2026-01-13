@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   Bell,
   Calendar,
+  ChevronDown,
   Hash,
   LayoutDashboard,
   Menu,
@@ -34,7 +35,6 @@ import {
 import { Logo } from "../icons/logo";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/create", label: "AI Create", icon: Sparkles },
   { href: "/remix", label: "Remix Studio", icon: Wand2 },
   { href: "/tools/repurpose", label: "Repurpose", icon: Scissors },
@@ -53,33 +53,36 @@ export function MainHeader() {
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-50">
        <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
         <Link
-          href="#"
+          href="/"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
           <Logo className="h-6 w-6 text-primary" />
           <span className="text-lg font-semibold text-white">NovaCreate</span>
         </Link>
+        <Link
+            href="/"
+            className="text-foreground transition-colors hover:text-foreground"
+          >
+            Dashboard
+        </Link>
         <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle Menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuLabel>Navigation</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {navItems.map((item) => (
-            <DropdownMenuItem key={item.href} asChild>
-              <Link href={item.href}>{item.label}</Link>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost">
+              Tools <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {navItems.map((item) => (
+              <DropdownMenuItem key={item.href} asChild>
+                <Link href={item.href}>{item.label}</Link>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+                <Link href={settingsItem.href}>{settingsItem.label}</Link>
             </DropdownMenuItem>
-          ))}
-           <DropdownMenuSeparator />
-           <DropdownMenuItem asChild>
-              <Link href={settingsItem.href}>{settingsItem.label}</Link>
-            </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </nav>
       
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
