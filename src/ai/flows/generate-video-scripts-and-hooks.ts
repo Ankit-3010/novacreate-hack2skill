@@ -1,19 +1,17 @@
 'use server';
 /**
  * @fileOverview A video script and hook generation AI agent.
- *
- * - generateVideoScriptsAndHooks - A function that handles the video script and hook generation process.
- * - GenerateVideoScriptsAndHooksInput - The input type for the generateVideoScriptsAndHooks function.
- * - GenerateVideoScriptsAndHooksOutput - The return type for the generateVideoScriptsAndHooks function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit'
+import { z } from 'genkit';
 
 const GenerateVideoScriptsAndHooksInputSchema = z.object({
   topic: z.string().describe('The topic of the video.'),
   targetAudience: z.string().describe('The target audience for the video.'),
   videoLength: z.string().describe('The desired length of the video (e.g., short, medium, long).'),
+  platform: z.string().optional().describe('The target platform (e.g. YouTube, TikTok).'),
+  tone: z.string().optional().describe('The tone of the script (e.g. Humorous, Educational, Serious).'),
 });
 export type GenerateVideoScriptsAndHooksInput = z.infer<typeof GenerateVideoScriptsAndHooksInputSchema>;
 
@@ -38,17 +36,18 @@ export async function generateVideoScriptsAndHooks(
 
 const prompt = ai.definePrompt({
   name: 'generateVideoScriptsAndHooksPrompt',
-  input: {schema: GenerateVideoScriptsAndHooksInputSchema},
-  output: {schema: GenerateVideoScriptsAndHooksOutputSchema},
-  prompt: `You are an AI assistant designed to help video creators generate video scripts and engaging hooks.
+  input: { schema: GenerateVideoScriptsAndHooksInputSchema },
+  output: { schema: GenerateVideoScriptsAndHooksOutputSchema },
+  prompt: `You are an expert video scriptwriter.
+  Generate a script for a {{videoLength}} video on the topic: "{{topic}}".
+  
+  Target Audience: {{targetAudience}}
+  {{#if platform}}Platform: {{platform}}{{/if}}
+  {{#if tone}}Tone: {{tone}}{{/if}}
 
-  Based on the topic, target audience, and video length, generate a video script and a set of hooks. The hooks should be attention grabbing and suitable for the given topic and audience.
-
-  Topic: {{{topic}}}
-  Target Audience: {{{targetAudience}}}
-  Video Length: {{{videoLength}}}
-
-  Output the script and hooks in a JSON format.
+  Output:
+  1. A full script formatted for reading (including scene cues if necessary).
+  2. 4 distinct hooks (Curious, Controversial, Educational, FOMO) to test at the start.
   `,
 });
 
@@ -59,7 +58,7 @@ const generateVideoScriptsAndHooksFlow = ai.defineFlow(
     outputSchema: GenerateVideoScriptsAndHooksOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const { output } = await prompt(input);
     return output!;
   }
 );

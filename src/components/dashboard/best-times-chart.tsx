@@ -12,34 +12,32 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function BestTimesChart() {
-    return (
-        <ChartContainer config={chartConfig} className="mt-4 h-48">
-            <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={bestTimesData}>
-                <CartesianGrid
-                vertical={false}
-                stroke="hsl(var(--muted))"
-                strokeDasharray="3 3"
-                />
-                <XAxis
-                dataKey="day"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                tickFormatter={(value) => value.slice(0, 3)}
-                stroke="hsl(var(--muted-foreground))"
-                />
-                <Tooltip
-                cursor={{ fill: "hsl(var(--card))" }}
-                content={<ChartTooltipContent hideLabel />}
-                />
-                <Bar
-                dataKey="views"
-                fill="var(--color-views)"
-                radius={4}
-                />
-            </BarChart>
-            </ResponsiveContainer>
-        </ChartContainer>
-    )
+  return (
+    <ChartContainer config={chartConfig} className="mt-4 h-48 w-full">
+      <BarChart data={bestTimesData} width={500} height={300}>
+        <CartesianGrid
+          vertical={false}
+          stroke="hsl(var(--muted))"
+          strokeDasharray="3 3"
+        />
+        <XAxis
+          dataKey="day"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          tickFormatter={(value) => value.slice(0, 3)}
+          stroke="hsl(var(--muted-foreground))"
+        />
+        <Tooltip
+          cursor={{ fill: "hsl(var(--card))" }}
+          content={<ChartTooltipContent hideLabel />}
+        />
+        <Bar
+          dataKey="views"
+          fill="var(--color-views)"
+          radius={4}
+        />
+      </BarChart>
+    </ChartContainer>
+  )
 }

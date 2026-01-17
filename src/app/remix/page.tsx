@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, Wand2 } from "lucide-react";
+import { remixContent } from "@/ai/flows/remix-content";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { GlassCard } from "@/components/shared/glass-card";
@@ -55,38 +56,26 @@ export default function RemixPage() {
     },
   });
 
+  // ... imports remain the same
+
   async function onSubmit(data: RemixFormValues) {
     setLoading(true);
     setResults(null);
     console.log(data);
 
-    // Simulate AI call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const generatedContent = await remixContent({
+        sourceContent: data.sourceContent,
+        formats: data.formats,
+      });
 
-    const generatedContent: any = {};
-    data.formats.forEach((format) => {
-      switch (format) {
-        case "blogPost":
-          generatedContent.blogPost =
-            "This is a beautifully remixed blog post. It has an engaging introduction, well-structured paragraphs that dive deep into the original content, and a concluding summary that leaves the reader with a clear takeaway.";
-          break;
-        case "twitterThread":
-          generatedContent.twitterThread =
-            "1/ This is the start of an insightful Twitter thread, distilled from the source material. \n2/ Each tweet will break down a key point into a bite-sized, engaging format perfect for the platform. #remix";
-          break;
-        case "linkedinPost":
-          generatedContent.linkedinPost =
-            "Here's a professional take on the original topic, tailored for LinkedIn. It starts with a strong hook to capture attention and provides valuable insights for my professional network. What are your thoughts? #professionaldevelopment";
-          break;
-        case "shortVideoScript":
-          generatedContent.shortVideoScript =
-            "[Scene: Upbeat music] A quick and punchy video script! Hook: 'You won't believe how this one idea can change everything.' Body: Three quick points from the source. CTA: 'Follow for more!'";
-          break;
-      }
-    });
-
-    setResults(generatedContent);
-    setLoading(false);
+      setResults(generatedContent);
+    } catch (error) {
+      console.error("Error remixing content:", error);
+      // You might want to add a toast error here
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -157,14 +146,14 @@ export default function RemixPage() {
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([
-                                            ...field.value,
-                                            item.id,
-                                          ])
+                                          ...field.value,
+                                          item.id,
+                                        ])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item.id
-                                            )
-                                          );
+                                          field.value?.filter(
+                                            (value) => value !== item.id
+                                          )
+                                        );
                                     }}
                                   />
                                 </FormControl>
